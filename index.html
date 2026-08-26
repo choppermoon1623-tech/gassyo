@@ -50,7 +50,7 @@
     font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
   }
   body {
-    padding-bottom: 130px;
+    padding-bottom: 220px;
   }
   header {
     padding: 28px 16px 10px;
@@ -358,7 +358,7 @@
 
 <main id="main"></main>
 
-<div class="player">
+<div class="player" id="player">
   <div class="player-inner">
     <div class="now-playing" id="nowPlaying">曲名をタップして再生してください</div>
     <div class="seek-row">
@@ -754,8 +754,16 @@ if (savedVolume !== null) {
   audio.volume = parseFloat(savedVolume);
 }
 
+const playerEl = document.getElementById('player');
+function syncPlayerHeight() {
+  document.body.style.paddingBottom = (playerEl.offsetHeight + 20) + 'px';
+}
+new ResizeObserver(syncPlayerHeight).observe(playerEl);
+window.addEventListener('resize', syncPlayerHeight);
+
 renderTabs();
 renderTracks();
+syncPlayerHeight();
 
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => {
