@@ -467,7 +467,13 @@ const abRangeEl = document.getElementById('abRange');
 const abToggleBtn = document.getElementById('abToggle');
 const abClearBtn = document.getElementById('abClear');
 
-let currentSongId = localStorage.getItem('gassyo_song') || SONGS[0].id;
+// USBなどから直接開いた時、保存が使えない端末でも止まらないようにする
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+};
+
+let currentSongId = store.get('gassyo_song') || SONGS[0].id;
 let currentTrackBtn = null;
 let isSeeking = false;
 let abA = null;
@@ -489,7 +495,7 @@ function renderTabs() {
     b.textContent = song.title;
     b.onclick = () => {
       currentSongId = song.id;
-      localStorage.setItem('gassyo_song', song.id);
+      store.set('gassyo_song', song.id);
       renderTabs();
       renderTracks();
     };
@@ -540,7 +546,7 @@ function renderTracks() {
 
 function loadChecklist(songId) {
   try {
-    const raw = localStorage.getItem('gassyo_check_' + songId);
+    const raw = store.get('gassyo_check_' + songId);
     if (raw) return JSON.parse(raw);
   } catch (e) {}
   const fresh = {};
@@ -549,7 +555,7 @@ function loadChecklist(songId) {
 }
 
 function saveChecklist(songId, data) {
-  localStorage.setItem('gassyo_check_' + songId, JSON.stringify(data));
+  store.set('gassyo_check_' + songId, JSON.stringify(data));
 }
 
 function renderChecklist(song) {
@@ -634,7 +640,7 @@ function playTrack(song, track, btn) {
   resetAB();
   audio.loop = false;
   loopBtn.classList.remove('on');
-  audio.src = path;
+  audio.src = encodeURIComponent(song.folder) + '/' + encodeURIComponent(track.file);
   audio.currentTime = 0;
   audio.play().catch(() => {});
   currentTrackBtn = btn;
@@ -699,12 +705,12 @@ document.getElementById('fwd5').onclick = () => {
 
 speedSel.onchange = () => {
   audio.playbackRate = parseFloat(speedSel.value);
-  localStorage.setItem('gassyo_speed', speedSel.value);
+  store.set('gassyo_speed', speedSel.value);
 };
 
 volumeEl.oninput = () => {
   audio.volume = parseFloat(volumeEl.value);
-  localStorage.setItem('gassyo_volume', volumeEl.value);
+  store.set('gassyo_volume', volumeEl.value);
 };
 
 loopBtn.onclick = () => {
@@ -743,12 +749,12 @@ abClearBtn.onclick = () => {
 };
 
 // restore saved preferences
-const savedSpeed = localStorage.getItem('gassyo_speed');
+const savedSpeed = store.get('gassyo_speed');
 if (savedSpeed) {
   speedSel.value = savedSpeed;
   audio.playbackRate = parseFloat(savedSpeed);
 }
-const savedVolume = localStorage.getItem('gassyo_volume');
+const savedVolume = store.get('gassyo_volume');
 if (savedVolume !== null) {
   volumeEl.value = savedVolume;
   audio.volume = parseFloat(savedVolume);
