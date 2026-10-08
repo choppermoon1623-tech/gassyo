@@ -1,4 +1,4 @@
-const CACHE = 'gassyo-v6';
+const CACHE = 'gassyo-v7';
 const APP_SHELL = [
   './',
   './index.html',
